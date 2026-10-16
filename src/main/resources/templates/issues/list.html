@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Issue Tracker | Dashboard</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6fa;
+            color: #202938;
+        }
+        header {
+            background: #172033;
+            color: white;
+            padding: 22px 6%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+        }
+        header h1 { margin: 0; font-size: 22px; }
+        main { max-width: 1150px; margin: 35px auto; padding: 0 20px; }
+        .top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+        h2 { margin: 0 0 8px; }
+        .muted { color: #667085; }
+        .button {
+            display: inline-block;
+            padding: 11px 16px;
+            border-radius: 7px;
+            text-decoration: none;
+            border: 0;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .primary { background: #4f46e5; color: white; }
+        .secondary { background: #e8eaf0; color: #202938; }
+        .danger { background: #fee2e2; color: #991b1b; }
+        .notice {
+            background: #dcfce7;
+            color: #166534;
+            padding: 13px;
+            border-radius: 7px;
+            margin-bottom: 20px;
+        }
+        .panel {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .panel-heading { padding: 20px; border-bottom: 1px solid #e5e7eb; }
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td {
+            padding: 15px 18px;
+            text-align: left;
+            border-bottom: 1px solid #edf0f4;
+            vertical-align: middle;
+        }
+        th {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #667085;
+            background: #fafbfc;
+        }
+        .issue-title { font-weight: bold; }
+        .description {
+            color: #667085;
+            font-size: 13px;
+            margin-top: 5px;
+            max-width: 320px;
+            overflow-wrap: anywhere;
+        }
+        .tag {
+            display: inline-block;
+            padding: 5px 9px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+        .OPEN { background: #dbeafe; color: #1d4ed8; }
+        .IN_PROGRESS { background: #fef3c7; color: #92400e; }
+        .RESOLVED { background: #dcfce7; color: #166534; }
+        .LOW { background: #e5e7eb; color: #374151; }
+        .MEDIUM { background: #dbeafe; color: #1d4ed8; }
+        .HIGH { background: #ffedd5; color: #9a3412; }
+        .CRITICAL { background: #fee2e2; color: #991b1b; }
+        .actions { display: flex; gap: 8px; align-items: center; }
+        .actions form { margin: 0; }
+        .empty { padding: 45px 20px; text-align: center; color: #667085; }
+        footer { text-align: center; padding: 25px; color: #667085; font-size: 13px; }
+        @media (max-width: 650px) {
+            header { padding: 18px 20px; }
+            main { margin-top: 22px; }
+            th, td { padding: 12px; }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Issue Tracker</h1>
+    <span>Developer Workspace</span>
+</header>
+
+<main>
+    <div class="top">
+        <div>
+            <h2>Issues Dashboard</h2>
+            <div class="muted">Track bugs, tasks, and development work.</div>
+        </div>
+        <a class="button primary" th:href="@{/issues/new}">+ Create Issue</a>
+    </div>
+
+    <div class="notice" th:if="${successMessage}"
+         th:text="${successMessage}" role="status"></div>
+
+   
+<section class="panel">
+    <div class="panel-heading">
+        <strong>All Issues</strong>
+
+        <form th:action="@{/}" method="get"
+              style="display:flex; flex-wrap:wrap; gap:10px; margin-top:16px;">
+
+            <input type="search"
+                   name="keyword"
+                   placeholder="Search title, description, assignee..."
+                   th:value="${keyword}"
+                   style="flex:1; min-width:200px; padding:11px; border:1px solid #d1d5db; border-radius:7px;">
+
+            <select name="status"
+                    style="padding:11px; border:1px solid #d1d5db; border-radius:7px;">
+                <option value="">All statuses</option>
+                <option th:each="item : ${statuses}"
+                        th:value="${item}"
+                        th:text="${#strings.replace(item.name(), '_', ' ')}"
+                        th:selected="${item == selectedStatus}">
+                </option>
+            </select>
+
+            <select name="priority"
+                    style="padding:11px; border:1px solid #d1d5db; border-radius:7px;">
+                <option value="">All priorities</option>
+                <option th:each="item : ${priorities}"
+                        th:value="${item}"
+                        th:text="${item}"
+                        th:selected="${item == selectedPriority}">
+                </option>
+            </select>
+
+            <button class="button primary" type="submit">Search / Filter</button>
+            <a class="button secondary" th:href="@{/}">Clear</a>
+        </form>
+    </div>
+
+
+        <div class="table-wrap" th:if="${!#lists.isEmpty(issues)}">
+            <table>
+                <thead>
+                <tr>
+                    <th>Issue</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Assignee</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="issue : ${issues}">
+                    <td>
+                        <div class="issue-title" th:text="${issue.title}">Sample issue</div>
+                        <div class="description"
+                             th:text="${issue.description}">Issue description</div>
+                    </td>
+                    <td>
+                        <span class="tag"
+                              th:classappend="${' ' + issue.priority.name()}"
+                              th:text="${issue.priority}">MEDIUM</span>
+                    </td>
+                    <td>
+                        <span class="tag"
+                              th:classappend="${' ' + issue.status.name()}"
+                              th:text="${issue.status}">OPEN</span>
+                    </td>
+                    <td th:text="${issue.assignee != null and !#strings.isEmpty(issue.assignee) ? issue.assignee : 'Unassigned'}">
+                        Unassigned
+                    </td>
+                    <td>
+                        <div class="actions">
+                            <a class="button secondary"
+                               th:href="@{/issues/{id}/edit(id=${issue.id})}">Edit</a>
+                            <form th:action="@{/issues/{id}/delete(id=${issue.id})}"
+                                  method="post"
+                                  onsubmit="return confirm('Delete this issue?');">
+                                <button class="button danger" type="submit">Delete</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="empty" th:if="${#lists.isEmpty(issues)}">
+            <h3>No issues yet</h3>
+            <p>Create your first issue to start tracking development work.</p>
+            <a class="button primary" th:href="@{/issues/new}">Create your first issue</a>
+        </div>
+    </section>
+</main>
+
+<footer>Developer Issue Tracker · Java · Spring Boot · PostgreSQL</footer>
+</body>
+</html>
