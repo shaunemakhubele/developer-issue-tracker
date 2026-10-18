@@ -27,4 +27,5 @@ public interface IssueRepository extends JpaRepository<Issue, Long> {
             @Param("status") IssueStatus status,
             @Param("priority") IssuePriority priority
     );
+    long countByStatus(IssueStatus status);
 }

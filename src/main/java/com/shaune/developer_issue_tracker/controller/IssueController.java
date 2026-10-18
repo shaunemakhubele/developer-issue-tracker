@@ -1,3 +1,4 @@
+
 package com.shaune.developer_issue_tracker.controller;
 
 import com.shaune.developer_issue_tracker.model.Issue;
@@ -20,28 +21,37 @@ public class IssueController {
         this.issueService = issueService;
     }
 
-  
-@GetMapping("/")
-public String dashboard(
-        @RequestParam(required = false) String keyword,
-        @RequestParam(required = false) IssueStatus status,
-        @RequestParam(required = false) IssuePriority priority,
-        Model model) {
+    @GetMapping("/")
+    public String dashboard(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) IssueStatus status,
+            @RequestParam(required = false) IssuePriority priority,
+            Model model) {
 
-    model.addAttribute(
-            "issues",
-            issueService.searchIssues(keyword, status, priority)
-    );
+        model.addAttribute(
+                "issues",
+                issueService.searchIssues(keyword, status, priority)
+        );
 
-    model.addAttribute("statuses", IssueStatus.values());
-    model.addAttribute("priorities", IssuePriority.values());
-    model.addAttribute("keyword", keyword == null ? "" : keyword);
-    model.addAttribute("selectedStatus", status);
-    model.addAttribute("selectedPriority", priority);
+        // Dashboard totals always cover all issues,
+        // regardless of the active table filters.
+        model.addAttribute("totalIssues",
+                issueService.getTotalIssueCount());
+        model.addAttribute("openIssues",
+                issueService.getIssueCountByStatus(IssueStatus.OPEN));
+        model.addAttribute("inProgressIssues",
+                issueService.getIssueCountByStatus(IssueStatus.IN_PROGRESS));
+        model.addAttribute("resolvedIssues",
+                issueService.getIssueCountByStatus(IssueStatus.RESOLVED));
 
-    return "issues/list";
-}
+        model.addAttribute("statuses", IssueStatus.values());
+        model.addAttribute("priorities", IssuePriority.values());
+        model.addAttribute("keyword", keyword == null ? "" : keyword);
+        model.addAttribute("selectedStatus", status);
+        model.addAttribute("selectedPriority", priority);
 
+        return "issues/list";
+    }
 
     @GetMapping("/issues/new")
     public String newIssueForm(Model model) {

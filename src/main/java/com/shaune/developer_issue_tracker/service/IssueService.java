@@ -37,6 +37,14 @@ public class IssueService {
         );
     }
 
+    public long getTotalIssueCount() {
+        return issueRepository.count();
+    }
+
+    public long getIssueCountByStatus(IssueStatus status) {
+        return issueRepository.countByStatus(status);
+    }
+
     public Issue getIssueById(Long id) {
         return issueRepository.findById(id)
                 .orElseThrow(() ->
@@ -60,6 +68,7 @@ public class IssueService {
     }
 
     public void deleteIssue(Long id) {
-        issueRepository.deleteById(id);
+        Issue issue = getIssueById(id);
+        issueRepository.delete(issue);
     }
 }

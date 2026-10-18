@@ -106,6 +106,52 @@
             main { margin-top: 22px; }
             th, td { padding: 12px; }
         }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(16, 24, 40, 0.03);
+        }
+
+        .stat-label {
+            color: #667085;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .stat-value {
+            font-size: 30px;
+            line-height: 1.2;
+            font-weight: 700;
+        }
+
+        .stat-card.total { border-top: 4px solid #4f46e5; }
+        .stat-card.open { border-top: 4px solid #3b82f6; }
+        .stat-card.progress { border-top: 4px solid #f59e0b; }
+        .stat-card.resolved { border-top: 4px solid #22c55e; }
+
+        @media (max-width: 800px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 420px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -126,7 +172,30 @@
     <div class="notice" th:if="${successMessage}"
          th:text="${successMessage}" role="status"></div>
 
-   
+
+        <section class="stats-grid" aria-label="Issue statistics">
+            <article class="stat-card total">
+                <div class="stat-label">Total Issues</div>
+                <div class="stat-value" th:text="${totalIssues}">0</div>
+            </article>
+
+            <article class="stat-card open">
+                <div class="stat-label">Open</div>
+                <div class="stat-value" th:text="${openIssues}">0</div>
+            </article>
+
+            <article class="stat-card progress">
+                <div class="stat-label">In Progress</div>
+                <div class="stat-value" th:text="${inProgressIssues}">0</div>
+            </article>
+
+            <article class="stat-card resolved">
+                <div class="stat-label">Resolved</div>
+                <div class="stat-value" th:text="${resolvedIssues}">0</div>
+            </article>
+        </section>
+
+
 <section class="panel">
     <div class="panel-heading">
         <strong>All Issues</strong>
